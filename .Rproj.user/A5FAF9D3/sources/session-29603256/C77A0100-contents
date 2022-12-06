@@ -1,0 +1,175 @@
+#Tarea 3
+#Integrantes: Lizeth Flores, Cristóbal Espinoza, Ornella Quero
+
+
+#  1. Cargar librerías ---------------------------------------------------
+
+pacman::p_load(tidyverse,
+               haven,
+               dplyr,
+               sjmisc,
+               sjPlot,
+               srvyr,
+               survey,
+               magrittr,
+               sjlabelled)
+
+#  2. Cargar datos --------------------------------------------------------
+
+elsoc_2019 <- read_dta("input/data/ELSOC_W04_v2.01_Stata14.dta")
+
+# 3. Explorar base de datos -----------------------------------------------
+
+names(elsoc_2019)
+sjPlot::view_df(elsoc_2019)
+head(elsoc_2019$c16) #revisar variables a utilizar
+
+
+# 4. Seleccionar variables ------------------------------------------------
+
+datare <- elsoc_2019 %>% select(c20, c22, c41_01, c41_02, c16, c18_04, c18_05,
+                                c18_06, c18_07, fact_exp01, idencuesta, ola, estrato,
+                                ponderador01)
+
+
+# 5.  Procesar variables ------------------------------------------------
+
+##Lámina 43. c20: movimiento social que más valora 
+
+datare$c20<- car::recode(datare$c20,"c(-888,-999)= NA")
+
+datare <- datare %>% 
+  mutate(c20 = case_when(c20  == 1 ~ "Movimiento social de apoyo a la causa estudiantil",
+                         c20  == 2 ~ "Movimiento social de apoyo a demandas laborales",
+                         c20  == 3 ~ "Movimiento social de grupos ambientalistas",
+                         c20  == 4 ~ "Movimiento social de apoyo a las demandas indigenas",
+                         c20  == 5 ~ "Movimiento social de apoyo a la diversidad sexual",
+                         c20  == 6 ~ "Movimiento social provida o antiaborto",
+                         c20  == 7 ~ "Movimiento social antidelincuencia",
+                         c20  == 8 ~ "Movimiento social feminista o de apoyo a la igualdad de genero",
+                         c20  == 9 ~ "Movimiento social por el cambio al sistema de pensiones",
+                         c20  == 10 ~"Movimiento social de Octubre (18/O)",
+                         c20 == 11~"Otro",
+                         c20 == 12~"Ninguno",
+                         TRUE ~ NA_character_))
+
+##Lámina 44. c22: frecuencia de participación en movimientos sociales
+
+datare <- datare %>% 
+  mutate(c22_proc = case_when(c22>=3 & c22>=4 & c22==5 ~ "Porcentaje que responde A veces, Frecuentemente o Muy frecuentemente"))
+
+datare$c22_proc<- car::recode(datare$c22_proc,"c(-888,-999)= NA")
+
+
+##Lámina 53.  Frecuencia departicipaciónen movimiento social (2019),según rabia hacia nivel de
+#desigualdadycostodelavidaenChile
+
+#c41_01 Grado de rabia por nivel de desigualdad
+datare$c41_01<- car::recode(datare$c41_01,"c(-888,-999)= NA")
+
+datare<-
+  datare%>% 
+  mutate(c41_01proc = case_when(c41_01>=2 & c41_01<=3 ~"Poca o Algo",
+                                c41_01>=4 & c41_01<=5 ~ "Bastante o Mucha",
+                                c41_01==1 ~ "Nada" ))
+
+datare$c41_01proc<- car::recode(datare$c41_01proc,"c(-888,-999)= NA")
+
+datare$c41_01proc<- set_label(datare$c41_01proc, "	Grado de rabia: Actuales niveles de desigualdad en
+Chile")
+
+datare$c41_01 <- datare %>% 
+  mutate(c41_01 = case_when(c41_01 == 1 ~ "Nada",
+                            c41_01 == 2 ~ "Poca",
+                            c41_01 == 3 ~ "Algo",
+                            c41_01 == 4 ~ "Bastante",
+                            c41_01 == 5 ~ "Mucha"))
+
+##c41_02 Grado de rabia por costo de vida
+datare$c41_02<- car::recode(datare$c41_02,"c(-888,-999)= NA")
+
+datare <- datare %>% 
+  mutate(c41_02proc = case_when(c41_02>=2 & c41_02<=3 ~ "Poca o Algo",
+                                c41_02>=4 & c41_02<=5 ~ "Bastante o Mucha",
+                                c41_02==1 ~ "Nada" ))
+
+datare$c41_02<- datare %>% 
+  mutate(c41_02 = case_when(c41_02 == 1 ~ "Nada",
+                            c41_02 == 2 ~ "Poca",
+                            c41_02 == 3 ~ "Algo",
+                            c41_02 == 4 ~ "Bastante",
+                            c41_02 == 5 ~ "Mucha"))
+
+
+# 6. Creación objeto encuesta ---------------------------------------------
+
+datare <- datare %>% 
+  group_by(estrato)%>% 
+  mutate(stratn = sum(fact_exp01)) %>%  #Calculamos el total de personas por estrato
+  ungroup() #desagrupamos
+
+objeto_encuesta <- datare %>% 
+  as_survey_design(ids =	idencuesta, #el identificador
+                   strata = estrato,
+                   fpc = stratn,
+                   weights =	ponderador01)
+
+objeto_encuesta$variables <-
+  objeto_encuesta$variables %>% 
+  mutate(c22 = case_when(c22>=1 & c22<=2 ~ "Nunca o casi nunca",
+                        c22==3 ~ "A veces",
+                        c22>=4 & c22<=5 ~ "Frecuente o muy frecuentemente" ))
+
+objeto_encuesta$variables$c22 <- set_label(objeto_encuesta$variables$c22, "	Frecuencia: Participación 
+                                 del entrevistado en el movimiento social")
+
+objeto_encuesta$variables$c41_02proc <- set_label(objeto_encuesta$variables$c41_02proc, "	Grado de rabia: 
+                                        El costo de la vida en Chile")
+
+
+# 7. Continuación procesamiento de variables ------------------------------
+
+#Lámina 58. c16 Representación Partidos Politicos
+
+objeto_encuesta %>% 
+  group_by(c16)%>%
+  mutate_at(c16)~(car::recode(., recodes = c("c(-999, -888, ) = NA"))) %>% 
+  summarise(prop= survey_prop(vartype = "ci", na.rm=T),
+            total= survey_total(vartype = "ci", na.rm = T)) %>%
+  mutate(per= prop*100) %>% 
+  mutate(c16 = case_when(c16>= 1 & 2 ~ "PC + PH",
+                         c16>= 3 & 4 ~ "PRO + RD",
+                         c16>= 6, 8, 12, 13 ~ "PPD + PDC + PS + PR",
+                         c16>= 5,10, 11, 7 ~ "RN + UDI + EVO + AMP",
+                         c16>= 14, 9 ~ "Otro Partido",
+                         c16>= 15 ~"Ninguno"))
+objeto_encuesta %>% 
+  plot_frq(c16,
+           type = c("bar"),
+           title = "Gráfico", 
+           show.ci = T, 
+           coord.flip = T, 
+           geom.colors = "turquoise",
+           show.values = FALSE)
+
+##Lámina 74. Acuerdo con las afirmaciones
+
+objeto_encuesta %>%
+  group_by(c18_04, c18_05, c18_06, c18_07)%>%
+  mutate_at(c18_04, c18_05, c18_06, c18_07)~(car::recode(., recodes = c("c(-999, -888,1 ,2 ,3 ) = NA"))) %>% 
+  mutate(c18_04 = case_when(c18_04>= 4  & c18_04<=5 ~ "De acuerdo o Totalmente")) %>%   
+  mutate(c18_05 = case_when(c18_05>= 4  & c18_05<=5 ~ "De acuerdo o Totalmente")) %>%  
+  mutate(c18_06 = case_when(c18_06>= 4  & c18_06<=5 ~ "De acuerdo o Totalmente")) %>%  
+  mutate(c18_07 = case_when(c18_07>= 4  & c18_07<=5 ~ "De acuerdo o Totalmente"))
+
+objeto_encuesta %>% 
+  plot_frq(c18_04, c18_05, c18_06, c18_07,
+           type = c("bar"),
+           title = "Gráfico", 
+           show.ci = T, 
+           coord.flip = T, 
+           geom.colors = "pink",
+           show.values = FALSE)
+
+##Guardar
+save(datare, objeto_encuesta, file = "output/data/datos_proc.rds")
