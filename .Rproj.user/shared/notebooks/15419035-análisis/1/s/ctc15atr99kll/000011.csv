@@ -1,0 +1,7 @@
+"0","plot_xtab(data_proc$edad_tramo, data_proc$r16_proc, "
+"0","          margin = ""row"", "
+"0","          bar.pos = ""stack"","
+"0","          title = ""Grado de confianza hacia inmigrantes según tramo etario"","
+"0","          show.summary = FALSE, "
+"0","          coord.flip = TRUE, "
+"0","          show.n = FALSE)"

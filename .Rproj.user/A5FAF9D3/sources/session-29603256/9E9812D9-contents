@@ -26,7 +26,7 @@ data_proc=readRDS("output/data/datos_proc.rds")
 ```
 
 ### ABSTRACT.
-
+La siguiente investigación trata sobre las actitudes de los chilenos hacia los inmigrantes que viven en el país, ya sea refiriendose a ellos como un general de inmigrantes o como peruanos, haitianos y venezolanos residentes en Chile. Para ello, se analizó los datos de la encuesta elsoc a través de gráficos y tablas de contingencia que permitió relacionar correctamente las variables. 
 
 
 ### INTRODUCCION.
@@ -90,6 +90,54 @@ plot_frq(data_proc, c37_05_proc,
 
 Casi el 78% de los encuestados dice estar de acuerdo con que se establezcan restricciones para el ingreso de migrantes al país, el 13,4% está en desacuerdo con esta medida y el 9% se mantiene neutral. 
 
+#### *Gráfico 5*
+#### Grado de confianza hacia inmigrantes según tramo etario
+
+```{r Gráfico 5, echo=FALSE}
+plot_xtab(data_proc$edad_tramo, data_proc$r16_proc, 
+          margin = "row", 
+          bar.pos = "stack",
+          title = "Grado de confianza hacia inmigrantes según tramo etario",
+          show.summary = FALSE, 
+          coord.flip = TRUE, 
+          show.n = FALSE)
+```
+
+En general, los jovenes son quienes tienen más confianza hacia los inmigrantes, siendo mucha con un 19% y poca o algo el 72% aprox. En cambio, el adulto mayor es el que menos confianza tiene, siendo nada de confianza hacia los inmigrantes un 26% y poca o algo el 58%. Asimismo, se podría decir que adulto es un intermedio de los porcentajes de jovenes y adultos mayores, siendo mucha confianza el 17%, nada de confianza el 19% y poca o algo el 63%.
+
+#### *Tabla 1*
+#### Grado de acuerdo que con llegada de peruanos, haitianos y venezolanos aumenta el desempleo según sexo y tramo de edad. 
+
+```{r Tabla 1, echo=FALSE}
+sjt.xtab(data_proc$r12_04_proc, data_proc$sexo_edad_tramo,
+         show.col.prc=TRUE,
+         show.summary=FALSE, 
+         encoding = "UTF-8", 
+         title = "Tabla de contingencia: Grado de acuerdo que con llegada de peruanos, haitianos y venezolanos aumenta el desempleo según sexo y tramo de edad")
+```
+
+Según sexo y tramo de edad, casi todos tienen el porcentanje más alto en la alternativa de de acuerdo con la afirmación a excepción del hombre y la mujer joven que tan solo está de acuerdo el 35% y el 40%, estando mayoritariamente el 46% y el 44,5% en desacuerdo con la frase. Por otro lado, la adulta mayor es quien más se encuentra de acuerdo con la frase de que con la llegada de inmigrantes aumenta el desempleo, seguida por la mujer adulta.
+
+#### *Tabla 2*
+#### Grado de simpatia por peruanos, haitianos y venezolanos que viven en Chile según sexo
+
+```{r Tabla 2, echo=FALSE}
+sjt.xtab(data_proc$r09_proc, data_proc$m0_sexo,
+         show.col.prc=TRUE,
+         show.summary=FALSE, 
+         encoding = "UTF-8", 
+         title = "Tabla de contingencia: Grado de simpatia por peruanos, haitianos y venezolanos que viven en Chile ")
+
+```
+
+De acuerdo al gráfico, ambos sexos sienten prácticamente en la misma medida poco o algo de simpatia por peruanos, haitianos y venezolanos que viven en Chile. Sin embargo, existen diferencias significativas en cuanto a poco o nada de confianza que siente, estando la mujeres con 15% aprox y los hombres con un 10% aprox.
+
+### CONCLUSIÓN.
+A través del análisis realizado se puede afirmar que predominan las actitudes y setimientos negativos hacia los inmigrantes en general como también en especifico a aquellos que son peruanos, haitianos y venezolanos. Esto se demostró mediante los datos que arrojaron los gráficos en donde cerca del 83% de la población chilena siente poco, algo o nada de confianza hacia las personas inmigrantes que están en Chile, el 53,1% siente poca simpatia por ellos, más del 50% cree que con su llegada aumenta el desempleo y un 78% esta de acuerdo con que se establezcan restricciones para su ingreso. Asimismo, quienes más desconfian son los adultos mayores y quienes menos simpatizan son las mujeres, a diferencia de los hombres. De esta manera, se puede inferir que el incremento del porcentaje de extranjeros que viven en Chile produce una reacción negativa y hostil por parte de los chilenos, ya sea por la formalidad de su estancia como por las costumbres que ellos tienen, sin mencionar los delitos con los cuales se les puede asociar justa o injustamente. 
 
 
+### REFERENCIAS.
+- González, R., Muñoz, E., & Mackenna, B. (2019). Cómo quieren en Chile al amigo cuando es forastero: actitudes de los chilenos hacia la inmigración. Isabel Aninat and Rodrigo Vergara (des), Inmigración en Chile. Una mirada multidimensional, 321-346.
+
+- Encuesta Longitudinal Elsoc 2021.
 

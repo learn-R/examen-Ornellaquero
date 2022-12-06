@@ -1,0 +1,5 @@
+"0","sjt.xtab(data_proc$r12_04_proc, data_proc$sexo_edad_tramo,"
+"0","         show.col.prc=TRUE,"
+"0","         show.summary=FALSE, "
+"0","         encoding = ""UTF-8"", "
+"0","         title = ""Tabla de contingencia: Grado de acuerdo que con llegada de peruanos, haitianos y venezolanos aumenta el desempleo según sexo y tramo de edad"")"
